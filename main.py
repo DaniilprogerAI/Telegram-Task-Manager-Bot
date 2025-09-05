@@ -7,7 +7,7 @@ import json
 
 print(datetime.now())
 
-data = {"users": []}
+data = {"users": {}}
 active_user = ""
 
 try:
@@ -16,6 +16,10 @@ try:
 except json.decoder.JSONDecodeError:
     with open("data.json", "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
+
+# Принудительно убедимся, что users — словарь
+if not isinstance(data.get("users"), dict):
+    data["users"] = {}
 
 bot = telebot.TeleBot(TOKEN)
 language = 'en'
@@ -152,7 +156,7 @@ def register_password(message):
     global user_password, user_name, active_user
     user_password = message.text.strip()
 
-    if user_name in data["users"] and user_password in data["users"][user_name]["password"]:
+    if user_name in data["users"] and user_password == data["users"][user_name]["password"]:
         if language == 'en':
             bot.send_message(message.chat.id, "You have logged into your account.")
         elif language == 'Русский':
@@ -163,7 +167,7 @@ def register_password(message):
         active_user = user_name
         task(message)
     else:
-        data["users"][user_name]["password"] = user_password
+        data["users"][user_name] = {"password": user_password, "tasks": {}}
 
         if language == 'en':
             bot.send_message(message.chat.id, "Your registered")
